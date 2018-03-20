@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/go_to_home"
+        android:title="@string/home"/>
+
+    <item
+        android:id="@+id/set_app_lock"
+        android:title="@string/set_applock" />
+
+    <item
+        android:id="@+id/set_reminder"
+        android:title="@string/set_remainder"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/rate_app"
+        android:title="@string/rate_app"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/change_theme"
+        android:title="@string/change_theme"
+        app:showAsAction="never" />
+
+</menu>

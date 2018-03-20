@@ -1,0 +1,79 @@
+<resources>
+    <string name="app_name">Diary of Secrets</string>
+    <string name="empty_view_title_text">Start writing your diary</string>
+    <string name="empty_view_subtitle_text">sub title</string>
+    <string name="action_save">save</string>
+    <string name="action_delete">delete</string>
+    <string name="action_delete_all_entries">delete all</string>
+    <string name="insertion_failed">failed to insert</string>
+    <string name="insertion_successful">successfully added</string>
+    <string name="updation_failed">failed to update</string>
+    <string name="update_successful">successfully updated</string>
+    <string name="editor_delete_pet_failed">failed to delete</string>
+    <string name="editor_delete_pet_successful">successfully deleted</string>
+    <string name="delete_dialog_msg">delete</string>
+    <string name="delete">delete</string>
+    <string name="cancel">cancel</string>
+    <string name="unsaved_changes_dialog_msg">changes are not saved</string>
+    <string name="discard">discard</string>
+    <string name="keep_editing">keep editing</string>
+    <string name="choose_date">Tap to select date</string>
+    <string name="title_of_page">Title </string>
+    <string name="write_message">Write your message.....</string>
+    <string name="unknown_breed">null</string>
+    <string name="no_title">No title</string>
+    <string name="diaryOfSecrets">Diary of secrets</string>
+    <string name="write_diary">Write your diary</string>
+    <string name="edit_diary">Edit your diary</string>
+    <string name="permissions_required">Permission required</string>
+    <string name="please_select_date">Please select date</string>
+    <string name="please_write_something">Please write somethng in message</string>
+    <string name="failed_to_create_text_file">Failed to create text file</string>
+    <string name="saved_as">Saved as %1$s</string>
+    <string name="action_save_as_file">Save as file</string>
+    <string name="openDrawer">open drawer</string>
+    <string name="closeDrawer">close drawer</string>
+    <string name="set_applock">Set personal lock</string>
+    <string name="set_remainder">Set reminder</string>
+    <string name="rate_app">Rate app</string>
+    <string name="change_theme">Change theme</string>
+    <string name="set_password">Set password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="select_security_question">Select security question</string>
+    <string name="write_your_answer">Write your answer</string>
+    <string name="password_mismatch">Confirm password and set password fields are mismatched</string>
+    <string name="password_empty">Password cannot be empty</string>
+    <string name="no_security_question_selected">No security question selected</string>
+    <string name="no_security_answer">Please select security answer</string>
+    <string name="password_set_successful">Password set successfully</string>
+    <string name="login">Login</string>
+    <string name="password_incorrect">Incorrect Password</string>
+    <string name="forgot_password">Forgot password ?</string>
+    <string name="ok">ok</string>
+    <string name="incorrect_answer">Incorrect answer</string>
+    <string name="home">Home</string>
+
+    <string-array name="months">
+        <item> Jan </item>
+        <item> Feb </item>
+        <item> Mar </item>
+        <item> Apr </item>
+        <item> May </item>
+        <item> Jun </item>
+        <item> Jul </item>
+        <item> Aug </item>
+        <item> Sep </item>
+        <item> Oct </item>
+        <item> Nov </item>
+        <item> Dec </item>
+    </string-array>
+
+    <string-array name="security_questions_array">
+        <item>Null</item>
+        <item>What is your favorite sweet dish?</item>
+        <item>What is your pet name?</item>
+        <item>What is the name of your crush?</item>
+        <item>What is your favorite holiday destination?</item>
+        <item>Who is your enemy?</item>
+    </string-array>
+</resources>
