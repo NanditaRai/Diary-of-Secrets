@@ -1,8 +1,10 @@
 package com.example.diaryofsecrets;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +13,17 @@ import android.widget.TextView;
 
 import com.example.diaryofsecrets.data.MessageContract;
 
+import java.util.HashMap;
+import java.util.Set;
+
 /**
  * {@link MessageCursorAdapter} is an adapter for a list or grid view
  * that uses a {@link Cursor} of pet data as its data source. This adapter knows
  * how to create list items for each row of pet data in the {@link Cursor}.
  */
 public class MessageCursorAdapter extends CursorAdapter {
+    private HashMap<Integer, Boolean> mSelectedPositions = new HashMap<Integer, Boolean>();
+    private HashMap<Long, Boolean> mSelectedIds = new HashMap<Long, Boolean>();
 
     /**
      * Constructs a new {@link MessageCursorAdapter}.
@@ -64,4 +71,44 @@ public class MessageCursorAdapter extends CursorAdapter {
         yearTextView.setText(year);
 
     }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View v = super.getView(position, convertView, parent);//let the adapter handle setting up the row views
+        v.setBackgroundColor(MyApplication.getContext().getResources().getColor(R.color.backgroundGray)); //default color
+
+        if (mSelectedPositions.get(position) != null) {
+            v.setBackgroundColor(MyApplication.getContext().getResources().getColor(R.color.mediumGray));// this is a selected position so make it red
+        }
+        return v;
+    }
+
+    public void setNewSelection(int position, long id, boolean value) {
+        mSelectedPositions.put(position, value);
+        mSelectedIds.put(id, value);
+        notifyDataSetChanged();
+    }
+
+    public boolean isPositionChecked(int position) {
+        Boolean result = mSelectedPositions.get(position);
+        return result == null ? false : result;
+    }
+
+    public Set<Long> getCurrentCheckedPosition() {
+//        return mSelectedPositions.keySet();
+        return mSelectedIds.keySet();
+    }
+
+    public void removeSelection(int position, long id) {
+        mSelectedPositions.remove(position);
+        mSelectedIds.remove(id);
+        notifyDataSetChanged();
+    }
+
+    public void clearSelection() {
+        mSelectedPositions = new HashMap<Integer, Boolean>();
+        mSelectedIds = new HashMap<Long, Boolean>();
+        notifyDataSetChanged();
+    }
+
 }

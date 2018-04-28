@@ -19,7 +19,7 @@
     <string name="keep_editing">keep editing</string>
     <string name="choose_date">Tap to select date</string>
     <string name="title_of_page">Title </string>
-    <string name="write_message">Write your message.....</string>
+    <string name="message_hint">How was your day?…</string>
     <string name="unknown_breed">null</string>
     <string name="no_title">No title</string>
     <string name="diaryOfSecrets">Diary of secrets</string>
@@ -63,6 +63,7 @@
     <string name="steps_for_forgot_password">Answer the security question below then set new password from inside app.</string>
     <string name="image_not_selected_properly">Image not selected properly</string>
     <string name="diary_notification">Write your diary</string>
+    <string name="ask_before_deleting">Are you sure to delete selected items ?</string>
 
     <string-array name="months">
         <item> Jan </item>

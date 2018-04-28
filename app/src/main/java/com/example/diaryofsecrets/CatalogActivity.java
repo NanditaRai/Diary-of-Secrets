@@ -8,10 +8,8 @@ import android.content.Intent;
 import android.content.Loader;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -25,14 +23,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.diaryofsecrets.data.MessageContract.MessageEntry;
@@ -43,7 +43,8 @@ import com.example.diaryofsecrets.navigation.SetAppLockFragment;
 import com.example.diaryofsecrets.navigation.SetReminderFragment;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Set;
 
 
 /**
@@ -65,6 +66,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
     private ImageView mProfileImage;
     private Uri mSelectedImageUri;
     private RelativeLayout mProfileImageParentView;
+    private ListView mMessageListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,16 +86,16 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
             }
         });
 
-        ListView messageListView = (ListView) findViewById(R.id.list);
+        mMessageListView = (ListView) findViewById(R.id.list);
         mCursorAdapter = new MessageCursorAdapter(this, null);
-        messageListView.setAdapter(mCursorAdapter);
+        mMessageListView.setAdapter(mCursorAdapter);
 
         mEmptyListView = (View) findViewById(R.id.empty_view);
-        messageListView.setEmptyView(mEmptyListView);
+        mMessageListView.setEmptyView(mEmptyListView);
 
         getLoaderManager().initLoader(PET_LOADER, null, this);
 
-        messageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mMessageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
@@ -146,6 +148,82 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         };
         //Setting the actionbarToggle to drawer layout
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+
+
+
+        mMessageListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+
+        mMessageListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
+            private int nr = 0;
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                // TODO Auto-generated method stub
+                mCursorAdapter.clearSelection();
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                // TODO Auto-generated method stub
+
+                nr = 0;
+                MenuInflater inflater = getMenuInflater();
+                inflater.inflate(R.menu.contextual_menu, menu);
+                return true;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                // TODO Auto-generated method stub
+                switch (item.getItemId()) {
+
+                    case R.id.item_delete:
+                        nr = 0;
+                        showDeleteMessage();
+
+                        //no need to call as this steps are already being taken in onDestroyActionMode()
+//                        mCursorAdapter.clearSelection();
+//                        mode.finish();
+                }
+                return false;
+            }
+
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position,
+                                                  long id, boolean checked) {
+                // TODO Auto-generated method stub
+                if (checked) {
+                    nr++;
+                    mCursorAdapter.setNewSelection(position, id, checked);
+                } else {
+                    nr--;
+                    mCursorAdapter.removeSelection(position, id);
+                }
+                mode.setTitle(nr + " selected");
+
+            }
+        });
+
+
+        mMessageListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                           int position, long arg3) {
+                // TODO Auto-generated method stub
+
+                mMessageListView.setItemChecked(position, !mCursorAdapter.isPositionChecked(position));
+                return false;
+            }
+        });
     }
 
     /**
@@ -313,6 +391,52 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
             transaction.commit();
         }
     }
+
+    private void showDeleteMessage() {
+        new AlertDialog.Builder(this)
+                .setMessage(getString(R.string.ask_before_deleting))
+                .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //get selected ids and delete from database
+                        ArrayList<Uri> Uris = new ArrayList<>();
+                        Set<Long> Ids = mCursorAdapter.getCurrentCheckedPosition();
+                        for(long id : Ids){
+                            Uri currentPetUri = ContentUris.withAppendedId(MessageEntry.CONTENT_URI, id);
+                            Uris.add(currentPetUri);
+                        }
+                        deletePets(Uris);
+                    }
+                })
+                .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create()
+                .show();
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+    }
+
+    private void deletePets(ArrayList<Uri> uris) {
+        int rowsDeleted = 0;
+        for(Uri uri: uris) {
+            rowsDeleted = getContentResolver().delete(uri, null, null);
+        }
+        // Show a toast message depending on whether or not the delete was successful.
+        if (rowsDeleted == 0) {
+            // If no rows were deleted, then there was an error with the delete.
+            Toast.makeText(this, getString(R.string.editor_delete_pet_failed),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            // Otherwise, the delete was successful and we can display a toast.
+            Toast.makeText(this, getString(R.string.editor_delete_pet_successful),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     /**
      * show dialog before logging out
