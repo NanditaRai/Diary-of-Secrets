@@ -13,7 +13,7 @@
     <string name="editor_delete_pet_successful">successfully deleted</string>
     <string name="delete_dialog_msg">delete</string>
     <string name="delete">delete</string>
-    <string name="cancel">cancel</string>
+    <string name="cancel">Cancel</string>
     <string name="unsaved_changes_dialog_msg">changes are not saved</string>
     <string name="discard">discard</string>
     <string name="keep_editing">keep editing</string>
@@ -37,7 +37,10 @@
     <string name="set_remainder">Set reminder</string>
     <string name="rate_app">Rate app</string>
     <string name="change_theme">Change theme</string>
+
+    <!-- set app lock screen -->
     <string name="set_password">Set password</string>
+    <string name="new_password">New password</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="select_security_question">Select security question</string>
     <string name="write_your_answer">Write your answer</string>
@@ -46,12 +49,20 @@
     <string name="no_security_question_selected">No security question selected</string>
     <string name="no_security_answer">Please select security answer</string>
     <string name="password_set_successful">Password set successfully</string>
+
+
     <string name="login">Login</string>
     <string name="password_incorrect">Incorrect Password</string>
     <string name="forgot_password">Forgot password ?</string>
-    <string name="ok">ok</string>
+    <string name="ok">OK</string>
     <string name="incorrect_answer">Incorrect answer</string>
     <string name="home">Home</string>
+    <string name="change_personal_lock">Change Personal Lock</string>
+    <string name="log_out">Log Out</string>
+    <string name="logout_message">Are you sure to logout ?</string>
+    <string name="steps_for_forgot_password">Answer the security question below then set new password from inside app.</string>
+    <string name="image_not_selected_properly">Image not selected properly</string>
+    <string name="diary_notification">Write your diary</string>
 
     <string-array name="months">
         <item> Jan </item>
@@ -69,7 +80,7 @@
     </string-array>
 
     <string-array name="security_questions_array">
-        <item>Null</item>
+        <item>Select security question</item>
         <item>What is your favorite sweet dish?</item>
         <item>What is your pet name?</item>
         <item>What is the name of your crush?</item>

@@ -12,6 +12,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.example.diaryofsecrets.DiaryPreference;
+import com.example.diaryofsecrets.MyApplication;
+
 /**
  * Created by ptyagi on 4/18/17.
  */
@@ -21,7 +24,11 @@ public class AlarmBootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
             //only enabling one type of notifications for demo purposes
-            NotificationHelper.scheduleRepeatingElapsedNotification(context);
+            DiaryPreference diaryPreference = new DiaryPreference(MyApplication.getContext());
+            if(diaryPreference.getAlarm() != null) {
+                String[] time = diaryPreference.getAlarm().split(",");
+                NotificationHelper.scheduleRepeatingRTCNotification(context, time[0], time[1]);
+            }
         }
     }
 }

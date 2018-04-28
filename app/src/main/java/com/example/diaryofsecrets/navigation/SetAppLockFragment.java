@@ -1,5 +1,6 @@
 package com.example.diaryofsecrets.navigation;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -8,19 +9,27 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.diaryofsecrets.CatalogActivity;
 import com.example.diaryofsecrets.DiaryPreference;
 import com.example.diaryofsecrets.MyApplication;
 import com.example.diaryofsecrets.R;
+import com.example.diaryofsecrets.utils.AppUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Nandita Rai on 2/3/2018.
@@ -48,8 +57,20 @@ public class SetAppLockFragment extends Fragment implements TextWatcher {
     }
 
     private void initializeViews(View view) {
+        RelativeLayout relativeLayout = (RelativeLayout) view.findViewById(R.id.set_app_lock_fragment_screen);
+        relativeLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                AppUtils.hideSoftKeypad(view);
+                return false;
+            }
+        });
+
         setPasswordText = (TextView) view.findViewById(R.id.set_password_text);
-        if(diaryPreference.get)
+        if (TextUtils.isEmpty(diaryPreference.getPassword()))
+            setPasswordText.setText(R.string.set_password);
+        else
+            setPasswordText.setText(R.string.new_password);
 
         setPasswordFirstDigit = view.findViewById(R.id.set_password_first_digit);
         setPasswordSecondDigit = view.findViewById(R.id.set_password_second_digit);
@@ -69,8 +90,6 @@ public class SetAppLockFragment extends Fragment implements TextWatcher {
         confirmPasswordThirdDigit.addTextChangedListener(this);
         confirmPasswordForthDigit.addTextChangedListener(this);
 
-//        setKeyListener();
-
         securityQuestionSpinner = view.findViewById(R.id.security_question_spinner);
         securityQuestionAnswer = view.findViewById(R.id.security_question_answer);
         setSpinner();
@@ -78,11 +97,15 @@ public class SetAppLockFragment extends Fragment implements TextWatcher {
         view.findViewById(R.id.set_password_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(validateData()){
+                if (validateData()) {
                     diaryPreference.setSecurityAnswer(securityQuestionAnswer.getText().toString().trim());
                     diaryPreference.setPassword(mPassword);
-                    Toast.makeText(getActivity(), getString(R.string.password_set_successful),Toast.LENGTH_SHORT).show();
-                    getActivity().getFragmentManager().popBackStack();
+                    Toast.makeText(getActivity(), getString(R.string.password_set_successful), Toast.LENGTH_SHORT).show();
+                    //update navigation drawer
+                    if (getActivity() != null)
+                        ((CatalogActivity) getActivity()).updateNavigationDrawer();
+                    //pop back to the activity
+                    getActivity().onBackPressed();
                 }
             }
         });
@@ -90,10 +113,29 @@ public class SetAppLockFragment extends Fragment implements TextWatcher {
     }
 
     private void setSpinner() {
-        // Create an ArrayAdapter using the string array and a default spinner
-        ArrayAdapter<CharSequence> securityQuestionAdapter = ArrayAdapter
-                .createFromResource(getActivity(), R.array.security_questions_array,
-                        android.R.layout.simple_spinner_item);
+        final List<String> questionsList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.security_questions_array)));
+
+        // Initializing an ArrayAdapter
+        final ArrayAdapter<String> securityQuestionAdapter = new ArrayAdapter<String>(getActivity(), R.layout.spinner_item, questionsList) {
+            @Override
+            public boolean isEnabled(int position) {
+                return position != 0;
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                TextView tv = (TextView) view;
+                if (position == 0) {
+                    // Set the hint text color gray
+                    tv.setTextColor(Color.GRAY);
+                } else {
+                    tv.setTextColor(Color.BLACK);
+                }
+                return view;
+            }
+        };
+
         // Specify the layout to use when the list of choices appears
         securityQuestionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
@@ -102,7 +144,6 @@ public class SetAppLockFragment extends Fragment implements TextWatcher {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.v("item", (String) parent.getItemAtPosition(position));
-                diaryPreference.setSecurityQuestionPosition(position);
                 diaryPreference.setSecurityQuestion((String) parent.getItemAtPosition(position));
             }
 
@@ -114,14 +155,14 @@ public class SetAppLockFragment extends Fragment implements TextWatcher {
     }
 
     private boolean validateData() {
-        if(!validatePassword()){
+        if (!validatePassword()) {
             return false;
         }
-        if(diaryPreference.getSecurityQuestionPosition() == 0){
-            Toast.makeText(getActivity(), getString(R.string.no_security_question_selected),Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(diaryPreference.getSecurityQuestion())) {
+            Toast.makeText(getActivity(), getString(R.string.no_security_question_selected), Toast.LENGTH_SHORT).show();
             return false;
         }
-        if(TextUtils.isEmpty(securityQuestionAnswer.getText().toString().trim())){
+        if (TextUtils.isEmpty(securityQuestionAnswer.getText().toString().trim())) {
             Toast.makeText(getActivity(), getString(R.string.no_security_answer), Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -134,26 +175,24 @@ public class SetAppLockFragment extends Fragment implements TextWatcher {
     }
 
     private boolean checkForEquality() {
-        if( setPasswordFirstDigit.getText().toString().trim().equals(confirmPasswordFirstDigit.getText().toString().trim()) &&
+        if (setPasswordFirstDigit.getText().toString().trim().equals(confirmPasswordFirstDigit.getText().toString().trim()) &&
                 setPasswordSecondDigit.getText().toString().trim().equals(confirmPasswordSecondDigit.getText().toString().trim()) &&
                 setPasswordThirdDigit.getText().toString().trim().equals(confirmPasswordThirdDigit.getText().toString().trim()) &&
-                setPasswordForthDigit.getText().toString().trim().equals(confirmPasswordForthDigit.getText().toString().trim())){
+                setPasswordForthDigit.getText().toString().trim().equals(confirmPasswordForthDigit.getText().toString().trim())) {
             return true;
-        }
-        else{
+        } else {
             Toast.makeText(getActivity(), getString(R.string.password_mismatch), Toast.LENGTH_SHORT).show();
             return false;
         }
     }
 
     private boolean checkForNull() {
-        if( !TextUtils.isEmpty(setPasswordFirstDigit.getText()) || !TextUtils.isEmpty(setPasswordSecondDigit.getText()) ||
-                !TextUtils.isEmpty(setPasswordThirdDigit.getText()) || !TextUtils.isEmpty(setPasswordForthDigit.getText())){
+        if (!TextUtils.isEmpty(setPasswordFirstDigit.getText()) || !TextUtils.isEmpty(setPasswordSecondDigit.getText()) ||
+                !TextUtils.isEmpty(setPasswordThirdDigit.getText()) || !TextUtils.isEmpty(setPasswordForthDigit.getText())) {
             mPassword = setPasswordFirstDigit.getText().toString().trim() + setPasswordSecondDigit.getText().toString().trim()
                     + setPasswordThirdDigit.getText().toString().trim() + setPasswordForthDigit.getText().toString().trim();
             return true;
-        }
-        else {
+        } else {
             Toast.makeText(getActivity(), R.string.password_empty, Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -181,12 +220,10 @@ public class SetAppLockFragment extends Fragment implements TextWatcher {
         // Focus 2nd field if 3rd is empty
         else if (setPasswordThirdDigit.getText().hashCode() == editedHash) {
             if (setPasswordThirdDigit.length() == 1) setPasswordForthDigit.requestFocus();
-            else if(setPasswordThirdDigit.length() == 0) setPasswordSecondDigit.requestFocus();
-        }
-
-        else if(setPasswordForthDigit.getText().hashCode() == editedHash) {
-            if(setPasswordForthDigit.length() == 0) setPasswordThirdDigit.requestFocus();
-            else if(setPasswordForthDigit.length() == 1) confirmPasswordFirstDigit.requestFocus();
+            else if (setPasswordThirdDigit.length() == 0) setPasswordSecondDigit.requestFocus();
+        } else if (setPasswordForthDigit.getText().hashCode() == editedHash) {
+            if (setPasswordForthDigit.length() == 0) setPasswordThirdDigit.requestFocus();
+            else if (setPasswordForthDigit.length() == 1) confirmPasswordFirstDigit.requestFocus();
         }
 
         // on confirm password fields
@@ -197,12 +234,14 @@ public class SetAppLockFragment extends Fragment implements TextWatcher {
         // Focus 3rd field if 2nd is full, or focus 1st field if 2nd is empty
         else if (confirmPasswordSecondDigit.getText().hashCode() == editedHash) {
             if (confirmPasswordSecondDigit.length() == 1) confirmPasswordThirdDigit.requestFocus();
-            else if (confirmPasswordSecondDigit.length() == 0) confirmPasswordFirstDigit.requestFocus();
+            else if (confirmPasswordSecondDigit.length() == 0)
+                confirmPasswordFirstDigit.requestFocus();
         }
         // Focus 2nd field if 3rd is empty
         else if (confirmPasswordThirdDigit.getText().hashCode() == editedHash) {
             if (confirmPasswordThirdDigit.length() == 1) confirmPasswordForthDigit.requestFocus();
-            else if(confirmPasswordThirdDigit.length() == 0) confirmPasswordSecondDigit.requestFocus();
+            else if (confirmPasswordThirdDigit.length() == 0)
+                confirmPasswordSecondDigit.requestFocus();
         }
     }
 

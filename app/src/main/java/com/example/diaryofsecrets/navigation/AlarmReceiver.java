@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.support.v7.app.NotificationCompat;
 
 import com.example.diaryofsecrets.CatalogActivity;
+import com.example.diaryofsecrets.MyApplication;
+import com.example.diaryofsecrets.R;
 
 /**
  * Created by ptyagi on 4/17/17.
@@ -40,8 +42,8 @@ public class AlarmReceiver extends BroadcastReceiver {
         NotificationCompat.Builder builder =
                 (NotificationCompat.Builder) new NotificationCompat.Builder(context)
                         .setContentIntent(pendingIntent)
-                        .setSmallIcon(android.R.drawable.arrow_up_float)
-                        .setContentTitle("Diary Notification")
+                        .setSmallIcon(R.drawable.notification_icon)
+                        .setContentTitle(MyApplication.getContext().getResources().getString(R.string.diary_notification))
                         .setAutoCancel(true);
 
         return builder;

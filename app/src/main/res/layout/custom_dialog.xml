@@ -7,6 +7,13 @@
     android:padding="10dp" >
 
     <TextView
+        android:text="@string/steps_for_forgot_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_marginBottom="10dp"/>
+
+    <TextView
         android:id="@+id/security_question"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

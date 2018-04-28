@@ -95,6 +95,7 @@ public class AppLockScreenActivity extends AppCompatActivity implements TextWatc
                                 // get user input and set it to etOutput
                                 // edit text
                                 if(diaryPreference.getSecurityAnswer().trim().equals(answer.getText().toString().trim())){
+                                    diaryPreference.clearPassword();
                                     Intent catalogIntent = new Intent(AppLockScreenActivity.this, CatalogActivity.class);
                                     startActivity(catalogIntent);
                                 }else{
@@ -140,7 +141,7 @@ public class AppLockScreenActivity extends AppCompatActivity implements TextWatc
 
         else if(setPasswordForthDigit.getText().hashCode() == editedHash) {
             if(setPasswordForthDigit.length() == 0) setPasswordThirdDigit.requestFocus();
-            else if(setPasswordForthDigit.length() == 1) performLogin();
+//            else if(setPasswordForthDigit.length() == 1) performLogin();
         }
     }
 

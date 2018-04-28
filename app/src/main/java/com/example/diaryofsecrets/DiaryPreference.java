@@ -2,6 +2,7 @@ package com.example.diaryofsecrets;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 
 import java.net.PortUnreachableException;
 
@@ -15,10 +16,10 @@ public class DiaryPreference {
     private static final String PREF_NAME = "DiaryOfSecretsPreference";
     private static final String KEY_THEME = "theme";
     private static final String KEY_SECURITY_QUESTION = "security question";
-    private static final String KEY_SECURITY_QUESTION_POSITION = "question position";
     private static final String KEY_SECURITY_QUESTION_ANSWER = "security answer";
     private static final String KEY_PASSWORD = "password";
     private static final String KEY_ALARM = "alarm";
+    private static final String KEY_PROFILE_IMAGE = "profile image";
 
     // Shared Preferences
     private final SharedPreferences mPref;
@@ -44,21 +45,12 @@ public class DiaryPreference {
         return mPref.getInt(KEY_THEME, 0);
     }
 
-    public void setSecurityQuestionPosition(int position){
-        editor.putInt(KEY_SECURITY_QUESTION_POSITION, position);
-        editor.commit();
-    }
-
-    public int getSecurityQuestionPosition(){
-        return mPref.getInt(KEY_SECURITY_QUESTION_POSITION, 0);
-    }
-
     public void setSecurityQuestion(String question){
         editor.putString(KEY_SECURITY_QUESTION, question);
         editor.commit();
     }
 
-    String getSecurityQuestion(){
+    public String getSecurityQuestion(){
         return mPref.getString(KEY_SECURITY_QUESTION, null);
     }
 
@@ -67,7 +59,7 @@ public class DiaryPreference {
         editor.commit();
     }
 
-    String getSecurityAnswer(){
+    public String getSecurityAnswer(){
         return mPref.getString(KEY_SECURITY_QUESTION_ANSWER, null);
     }
 
@@ -76,7 +68,14 @@ public class DiaryPreference {
         editor.commit();
     }
 
-    String getPassword(){
+    public void clearPassword(){
+        editor.putString(KEY_PASSWORD,  null);
+        editor.putString(KEY_SECURITY_QUESTION, null);
+        editor.putString(KEY_SECURITY_QUESTION_ANSWER, null);
+        editor.commit();
+    }
+
+    public String getPassword(){
         return mPref.getString(KEY_PASSWORD, null);
     }
 
@@ -87,6 +86,15 @@ public class DiaryPreference {
 
     public String getAlarm(){
         return mPref.getString(KEY_ALARM, null);
+    }
+
+    public void setProfileImageUri(Uri uri){
+        editor.putString(KEY_PROFILE_IMAGE, uri.toString());
+        editor.commit();
+    }
+
+    public String getProfileImageUri(){
+        return mPref.getString(KEY_PROFILE_IMAGE, null);
     }
 }
 

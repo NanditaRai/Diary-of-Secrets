@@ -26,8 +26,8 @@ public class SetReminderFragment extends Fragment implements TimePickerFragment.
     private TextView timeTextView;
     private TextView amPmTextView;
     private Switch alarmToggleButton;
-    private String mHours;
-    private String mMins;
+    private String mHours ;
+    private String mMins ;
     private DiaryPreference diaryPreference;
 
     @Nullable
@@ -55,6 +55,7 @@ public class SetReminderFragment extends Fragment implements TimePickerFragment.
             }
         });
 
+        amPmTextView = view.findViewById(R.id.am_pm);
         timeTextView = view.findViewById(R.id.time);
         timeTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,7 +67,10 @@ public class SetReminderFragment extends Fragment implements TimePickerFragment.
         //set the initial alarm if set by the user earlier
         diaryPreference = new DiaryPreference(MyApplication.getContext());
         if(diaryPreference.getAlarm() != null){
-            timeTextView.setText(diaryPreference.getAlarm());
+            String[] time = diaryPreference.getAlarm().split(",");
+            setAlarmDisplayValue(Integer.valueOf(time[0]), Integer.valueOf(time[1]));
+//            timeTextView.setText(String.format("%s:%s", String.valueOf(time[0]), String.valueOf(time[1])));
+//            amPmTextView.setText(time[2]);
             //just check the button, alarm already set
             alarmToggleButton.setChecked(true);
         }
@@ -77,7 +81,8 @@ public class SetReminderFragment extends Fragment implements TimePickerFragment.
         if( timeTextView.getText() != null){
             NotificationHelper.scheduleRepeatingRTCNotification(getActivity(), mHours, mMins);
             NotificationHelper.enableBootReceiver(getActivity());
-            diaryPreference.setAlarm(timeTextView.getText().toString());
+            String alarmWithSuffix = mHours.concat(",").concat(mMins);
+            diaryPreference.setAlarm(alarmWithSuffix);
         }
     }
 
@@ -91,8 +96,28 @@ public class SetReminderFragment extends Fragment implements TimePickerFragment.
     public void onAlarmTimeSet(int hour, int min) {
         mHours = String.valueOf(hour);
         mMins = String.valueOf(min);
-        timeTextView.setText(String.format("%s:%s", mHours, mMins));
-        alarmToggleButton.setChecked(true);
+//        timeTextView.setText(String.format("%s:%s", mHours, mMins));
+//        amPmTextView.setText(am_pm);
+        setAlarmDisplayValue(hour, min);
+
+        if(! alarmToggleButton.isChecked() )
+            alarmToggleButton.setChecked(true);
+        else
+            setAlarm();
+    }
+
+    private void setAlarmDisplayValue(int hour, int min){
+        String am_pm;
+        if(hour > 12) {
+            hour = hour - 12;
+            am_pm = "PM";
+        }
+        else{
+            am_pm = "AM";
+        }
+        String formattedMin = String.format("%02d", min);
+        timeTextView.setText(String.format("%s:%s", String.valueOf(hour), formattedMin));
+        amPmTextView.setText(am_pm);
     }
 
 }

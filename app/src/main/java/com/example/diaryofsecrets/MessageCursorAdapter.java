@@ -43,10 +43,10 @@ public class MessageCursorAdapter extends CursorAdapter {
 
         int dateColumnIndex = cursor.getColumnIndex(MessageContract.MessageEntry.COLUMN_MESSAGE_DATE);
         int titleColumnIndex = cursor.getColumnIndex(MessageContract.MessageEntry.COLUMN_MESSAGE_TITLE);
-//        int messageColumnIndex = cursor.getColumnIndex(MessageContract.MessageEntry.COLUMN_MESSAGE);
+        int messageColumnIndex = cursor.getColumnIndex(MessageContract.MessageEntry.COLUMN_MESSAGE);
 
         String title = cursor.getString(titleColumnIndex);
-//        String message = cursor.getString(messageColumnIndex);
+        String message = cursor.getString(messageColumnIndex);
         String fullDate = cursor.getString(dateColumnIndex);
         String part[] = fullDate.split(",");
         String date = part[0];
@@ -59,7 +59,7 @@ public class MessageCursorAdapter extends CursorAdapter {
         }
 
         titleTextView.setText(title);
-//        summaryTextView.setText(message);
+        summaryTextView.setText(message);
         dateTextView.setText(date);
         yearTextView.setText(year);
 

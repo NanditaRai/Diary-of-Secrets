@@ -3,13 +3,15 @@ package com.example.diaryofsecrets;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -21,12 +23,17 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.diaryofsecrets.data.MessageContract.MessageEntry;
 import com.example.diaryofsecrets.navigation.ChangeTheme;
@@ -34,6 +41,9 @@ import com.example.diaryofsecrets.navigation.ChangeThemeFragment;
 import com.example.diaryofsecrets.navigation.RateApplicationFragment;
 import com.example.diaryofsecrets.navigation.SetAppLockFragment;
 import com.example.diaryofsecrets.navigation.SetReminderFragment;
+import com.squareup.picasso.Picasso;
+
+import java.io.IOException;
 
 
 /**
@@ -42,21 +52,26 @@ import com.example.diaryofsecrets.navigation.SetReminderFragment;
 public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, NavigationView.OnNavigationItemSelectedListener {
 
     private static final int PET_LOADER = 0;
+    private static final int SELECT_PICTURE = 7;
 
     MessageCursorAdapter mCursorAdapter;
+    private DiaryPreference mDiaryPreference;
     private View mEmptyListView;
     private NavigationView mNavigationView;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private Toolbar mToolbar;
     private FloatingActionButton mFab;
+    private ImageView mProfileImage;
+    private Uri mSelectedImageUri;
+    private RelativeLayout mProfileImageParentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        DiaryPreference diaryPreference = new DiaryPreference(MyApplication.getContext());
-        ChangeTheme.onActivityCreateSetTheme(this, diaryPreference.getTheme());
+        mDiaryPreference = new DiaryPreference(MyApplication.getContext());
+        ChangeTheme.onActivityCreateSetTheme(this, mDiaryPreference.getTheme());
         setContentView(R.layout.activity_catalog);
 
         // Setup FAB to open EditorActivity
@@ -69,16 +84,16 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
             }
         });
 
-        ListView petListView = (ListView) findViewById(R.id.list);
+        ListView messageListView = (ListView) findViewById(R.id.list);
         mCursorAdapter = new MessageCursorAdapter(this, null);
-        petListView.setAdapter(mCursorAdapter);
+        messageListView.setAdapter(mCursorAdapter);
 
         mEmptyListView = (View) findViewById(R.id.empty_view);
-        petListView.setEmptyView(mEmptyListView);
+        messageListView.setEmptyView(mEmptyListView);
 
         getLoaderManager().initLoader(PET_LOADER, null, this);
 
-        petListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        messageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
@@ -93,6 +108,22 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         mNavigationView.setItemIconTintList(null);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
+
+        updateNavigationDrawer();
+        //set profile image
+        View mHeaderView = mNavigationView.getHeaderView(0);
+        mProfileImage = (ImageView) mHeaderView.findViewById(R.id.profile_image);
+
+        mProfileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE);
+            }
+        });
+
         mNavigationView.setNavigationItemSelectedListener(this);
         //handle the drawer toggle event
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.openDrawer, R.string.closeDrawer) {
@@ -105,6 +136,11 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
             @Override
             public void onDrawerOpened(View drawerView) {
                 // Code here will be triggered once the drawer open as we don't want anything to happen so we leave this blank
+                if (mDiaryPreference.getProfileImageUri() != null) {
+//                    setProfileImageInView(Uri.parse(mDiaryPreference.getProfileImageUri()));
+//                    mProfileImage.setImageURI(Uri.parse(mDiaryPreference.getProfileImageUri()));
+                    Picasso.with(CatalogActivity.this).load(Uri.parse(mDiaryPreference.getProfileImageUri())).into(mProfileImage);
+                }
                 super.onDrawerOpened(drawerView);
             }
         };
@@ -112,6 +148,32 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
+    /**
+     * This is called when the image from the camera is captured
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == SELECT_PICTURE) {
+            mSelectedImageUri = data.getData();
+            if (null != mSelectedImageUri) {
+                Picasso.with(CatalogActivity.this).load(mSelectedImageUri).into(mProfileImage);
+                mDiaryPreference.setProfileImageUri(mSelectedImageUri);
+            } else {
+                Toast.makeText(this, R.string.image_not_selected_properly, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    public void updateNavigationDrawer() {
+        //change the text in drawer if app lock is already set
+        if (!TextUtils.isEmpty(mDiaryPreference.getPassword())) {
+            Menu menu = mNavigationView.getMenu();
+            MenuItem menuItem = menu.findItem(R.id.set_app_lock);
+            menuItem.setTitle(getString(R.string.change_personal_lock));
+        }
+    }
 
     private void deleteAllEntries() {
         int rowsDeleted = getContentResolver().delete(MessageEntry.CONTENT_URI, null, null);
@@ -124,7 +186,8 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         String[] projection = {
                 MessageEntry._ID,
                 MessageEntry.COLUMN_MESSAGE_DATE,
-                MessageEntry.COLUMN_MESSAGE_TITLE
+                MessageEntry.COLUMN_MESSAGE_TITLE,
+                MessageEntry.COLUMN_MESSAGE
         };
 
         return new CursorLoader(this, MessageEntry.CONTENT_URI, projection, null, null, null);
@@ -169,7 +232,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         mDrawerLayout.closeDrawers();
         switch (item.getItemId()) {
             case R.id.go_to_home:
-                if(getSupportFragmentManager().findFragmentById(R.id.catalog_home_frame) != null){
+                if (getSupportFragmentManager().findFragmentById(R.id.catalog_home_frame) != null) {
                     getSupportFragmentManager().beginTransaction().remove(getSupportFragmentManager().findFragmentById(R.id.catalog_home_frame)).commit();
                     mFab.setVisibility((View.VISIBLE));
                 }
@@ -190,6 +253,9 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
                 mFab.setVisibility(View.INVISIBLE);
                 openChangeThemeFragment();
                 return true;
+            case R.id.log_out:
+                //show dialog to confirm logging out
+                showLogOutMessage();
             default:
                 break;
         }
@@ -248,6 +314,23 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         }
     }
 
+    /**
+     * show dialog before logging out
+     */
+    private void showLogOutMessage() {
+        new AlertDialog.Builder(this)
+                .setMessage(getString(R.string.logout_message))
+                .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                    }
+                })
+                .create()
+                .show();
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+    }
 
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
@@ -272,11 +355,13 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
             getSupportFragmentManager().beginTransaction().
                     remove(getSupportFragmentManager().findFragmentById(R.id.catalog_home_frame)).commit();
             mFab.setVisibility(View.VISIBLE);
+        } else {
+            showLogOutMessage();
         }
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         mFab.setVisibility(View.VISIBLE);
         super.onResume();
     }

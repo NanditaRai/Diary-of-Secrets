@@ -33,8 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:textColor="@color/white"
-        android:textSize="40sp"
-        android:text="AM"/>
+        android:textSize="40sp" />
 
 
     <Switch

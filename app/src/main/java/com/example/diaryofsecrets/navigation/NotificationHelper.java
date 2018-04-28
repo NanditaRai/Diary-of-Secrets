@@ -32,15 +32,32 @@ public class NotificationHelper {
      */
     static void scheduleRepeatingRTCNotification(Context context, String hour, String min) {
         //get calendar instance to be able to select what time notification should be scheduled
-        Calendar calendar = Calendar.getInstance();
+        Calendar current = Calendar.getInstance();
+        Calendar calendar = (Calendar)current.clone();
         calendar.setTimeInMillis(System.currentTimeMillis());
+
         //Setting time of the day (8am here) when notification will be sent every day (default)
-//        calendar.set(Calendar.HOUR_OF_DAY,
-//                Integer.getInteger(hour, 8),
-//                Integer.getInteger(min, 0));
         calendar.set(Calendar.HOUR_OF_DAY,Integer.valueOf(hour));//set the alarm time
         calendar.set(Calendar.MINUTE, Integer.valueOf(min));
         calendar.set(Calendar.SECOND,0);
+
+        if (calendar.compareTo(current) <= 0) {
+            calendar.add(Calendar.DATE, 1);
+        }
+
+
+//        Calendar calNow = Calendar.getInstance();
+//        Calendar calSet = (Calendar) calNow.clone();
+//
+//        calSet.set(Calendar.HOUR_OF_DAY, hourOfDay);
+//        calSet.set(Calendar.MINUTE, minute);
+//        calSet.set(Calendar.SECOND, 0);
+//        calSet.set(Calendar.MILLISECOND, 0);
+//
+//        if (calSet.compareTo(calNow) <= 0) {
+//
+//            calSet.add(Calendar.DATE, 1);
+//        }
 
 
         //Setting intent to class where Alarm broadcast message will be handled
